@@ -4,6 +4,7 @@
   (:export
    #:where
    #:make-object
+   #:object-type
    #:self))
 
 (in-package :not-clos)
@@ -26,7 +27,7 @@
                  (mapcar #'symbol-name symbols))))
 
 ;; Get type of object
-(defun obj/type-of (obj)
+(defun object-type (obj)
   (cdr (assoc 'obj/type obj)))
 
 ;; Allow applying 'and macro on a list
@@ -79,14 +80,19 @@
 			   :accum1 (cons (funcall func (car list1) (car list2)) accum1))
       (reverse accum1)))
 
+(defun extract-keys (list)
+  (mapcar #'(lambda (item) (if (consp item) (car item) item)) list))
+
 ;; Object creation macro
-(defmacro make-object (name keys)
-  (let* ((slots (map-slots name keys))
+(defmacro make-object (name init-keys)
+  (let* ((keys (extract-keys init-keys))
+	 (slots (map-slots name keys))
 	 (object-slots (symbol-append name '- 'slots))
 	 (self-slots `(cons (cons 'cons (cons ''obj/type (list '(quote ,name))))
-			    (mapcar (lambda (slot) (cons 'cons (cons
-							   `(quote ,slot)
-							   (list (symbol-append 'self '- slot)))))
+			    (mapcar (lambda (slot)
+				      (cons 'cons (cons
+						   `(quote ,slot)
+						   (list (symbol-append 'self '- slot)))))
 				    ,object-slots))))
     `(progn
 
@@ -95,8 +101,15 @@
        (defun ,(symbol-append 'make '- name) (&key ,@keys)
 	 (cons (cons 'obj/type (quote ,name))
 	       (double-mapcar
-		(lambda (key other-key) (cons key other-key))
-		(quote ,keys)
+		(lambda (key other-key)
+		  (let* ((key-p (consp key))
+			 (extracted-key
+			   (if key-p (car key) key)))
+		    (if other-key
+			(cons extracted-key other-key) ;; when key is supplied
+			(cons extracted-key            ;; when not supplied
+			      (if key-p (eval (cadr key)) nil))))) ;; ensure the initform is evaluated
+		(quote ,init-keys)
 		(list ,@keys))))
 
        ;; Create <object>-slots as well as its function
@@ -131,7 +144,11 @@
 		            ;; bind self to this package so symbol comparisons work
 		(let* ,(cons '(self nil) (map-slots1 (quote ,name) ,object-slots)) ;; 'self-* bindings
 		  (let ((res/internal (progn ,@body)))
-		    `(,(self) . ,(if res/internal res/internal '(nil))))))) ;; call (self) to return new object
+		    ;; call (self) to return new object
+		    ;; We also pass the return value of the function
+		    ;; Since it's not possible to cons a nil we send back a special 'obj/nil symbol,
+		    ;;   which is then checked by the wrapper to return nil when necessary.
+		    `(,(self) . ,(if res/internal res/internal 'obj/nil))))))
 
 	    ;; Invoker macro
 	    ;;<object>-<method-name> (obj &rest args)
@@ -142,12 +159,13 @@
 		  `(let ((obj/result
 			   (,(symbol-append 'obj/ (quote ,(quote ,name)) '- (quote ,method-name) '- 'intern) ,obj ,@args)))
 		     (setf ,obj (car obj/result)) ;;(car obj/result))
-		     (cdr obj/result))
+		     (if (eq (cdr obj/result) 'obj/nil) nil (cdr obj/result)))
 
 		  ;; Wrap with modify-self (when 'self is used)
-		  `(cdr (,(symbol-append 'obj/ (quote ,(quote ,name)) '-modify-self)
+		  `(let ((res (cdr (,(symbol-append 'obj/ (quote ,(quote ,name)) '-modify-self)
 		    (,(symbol-append 'obj/ (quote ,(quote ,name)) '- (quote ,method-name) '- 'intern)
-		     (self) ,@args)))))))
+		     (self) ,@args)))))
+		     (if (eq res 'obj/nil) nil res))))))
 
        ;; Define internal setter functions by mapping over defined slots.
        ;;<object>-set-<var>-intern
