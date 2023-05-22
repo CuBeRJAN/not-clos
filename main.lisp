@@ -31,6 +31,8 @@
 (person-make-younger my-person)
 (format t "Her age is ~a.~%" (person-calculate-age my-person))
 (format t "She is a ~a.~%" (not-clos:object-type my-person))
+(write person-slots) ;; We can also list an object's slots
+(terpri)
 
 (person-defmethod print-name ()
 		  (format t "~a~%" self-name))
