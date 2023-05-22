@@ -1,6 +1,4 @@
 (load "not-clos.lisp")
-(defpackage :my-package
-  (:use :cl))
 
 (not-clos:make-object person ;; Create a new object person
 		      ;; The slots of this object

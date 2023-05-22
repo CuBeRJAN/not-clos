@@ -19,6 +19,7 @@ There were a few self-imposed restrictions when writing this system:
 - No use of iteration
   - Mapping to lists is used a lot
   - Where there was no way around it tail-call optimized recursion was used instead.
+*note :tail call optimization only works on some implementations!*
 
 There is no practical reason for these restrictions, don't look for one ;)
 
@@ -26,7 +27,19 @@ There is no practical reason for these restrictions, don't look for one ;)
 ** Why should you use not-clos?
 Short answer: you probably shouldn't.
 
-This was more than anything a programming excercise for me, Common Lisp already ships its great object system out of the box.
+This was more than anything a programming exercise for me, Common Lisp already ships its great object system out of the box.
+
 
 ** Examples
-See ~main.lisp~ for proper examples.
+#+BEGIN_SRC common-lisp
+    (load "not-clos.lisp")
+
+    (not-clos:make-object rectangle (x 0) (y 0))
+
+    (defvar my-rect (make-rectangle :x 10 :y 10))
+
+    (rectangle-defmethod calc-area ()
+			 (* self-x self-y))
+    (format t "~a~%" (rectangle-calc-area my-rect))
+#+END_SRC
+*See ~main.lisp~ for full example.*
