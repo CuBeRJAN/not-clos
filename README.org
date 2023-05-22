@@ -27,3 +27,6 @@ There is no practical reason for these restrictions, don't look for one ;)
 Short answer: you probably shouldn't.
 
 This was more than anything a programming excercise for me, Common Lisp already ships its great object system out of the box.
+
+** Examples
+See ~main.lisp~ for proper examples.
