@@ -10,6 +10,9 @@ Basic features are currently implemented
 - Automatic setters and getters
 - Defining methods
 
+** Missing features
+- There is currently no inheritance/polymorphism
+
 
 ** Implenetation restrictions
 There were a few self-imposed restrictions when writing this system:
