@@ -1,0 +1,29 @@
+#+TITLE: not-clos
+#+AUTHOR:  (lambda () nil)
+
+~not-clos~ if a small object system implementation for Common Lisp.
+
+** Features
+Basic features are currently implemented
+- Creating objects
+- Initialization forms for variables not set at object creation
+- Automatic setters and getters
+- Defining methods
+
+
+** Implenetation restrictions
+There were a few self-imposed restrictions when writing this system:
+- No use of arrays - each object is an immutable list
+  - For this reason when an object's value is changed a brand new modified object is created, then the symbol is rebound to that object with a macro.
+  - This is obviously not the most efficient way.
+- No use of iteration
+  - Mapping to lists is used a lot
+  - Where there was no way around it tail-call optimized recursion was used instead.
+
+There is no practical reason for these restrictions, don't look for one ;)
+
+
+** Why should you use not-clos?
+Short answer: you probably shouldn't.
+
+This was more than anything a programming excercise for me, Common Lisp already ships its great object system out of the box.
