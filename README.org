@@ -11,6 +11,7 @@ Basic features are currently implemented
 - Defining methods
 
 ** Missing features
+- It's rather slow - I have some ideas for optimization but I'm not sure I'll bother implementing them
 - There is currently no inheritance/polymorphism
 
 
