@@ -37,7 +37,7 @@ This was more than anything a programming exercise for me, Common Lisp already s
 #+BEGIN_SRC common-lisp
     (load "not-clos.lisp")
 
-    (not-clos:make-object rectangle (x 0) (y 0))
+    (not-clos:make-object rectangle ((x 0) (y 0)))
 
     (defvar my-rect (make-rectangle :x 10 :y 10))
 
